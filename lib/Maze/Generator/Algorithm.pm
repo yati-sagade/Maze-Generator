@@ -2,6 +2,14 @@ package Maze::Generator::Algorithm;
 use strictures 2;
 use Moo::Role;
 
+has options => (
+    is  => 'ro',
+    isa => sub {
+        my $val = shift;
+        return ref $val eq 'HASH';
+    },
+);
+
 requires 'name';
 
 requires 'description';

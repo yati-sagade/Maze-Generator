@@ -2,29 +2,19 @@
 use strictures 2;
 use feature qw(say);
 
-use Maze::Generator::Grid;
-use Maze::Generator::Algorithm;
+use Maze::Generator;
 use Getopt::Long;
 use Pod::Usage;
 use Data::Dumper;
 use Module::Load;
+use Carp;
 
-my @algorithms = qw/
-    Maze::Generator::Algorithm::BinaryTree
-/;
+$SIG{__DIE__} = \&Carp::confess;
 
-my %name_to_algorithm;
-for my $module (@algorithms) {
-    load $module;
-    $name_to_algorithm{$module->name} = $module;
-}
-
+my $generator = Maze::Generator->new;
 MAIN: {
     my $settings = _get_settings();
-    my $algo = $settings->{algorithm}->new;
-    my $grid = Maze::Generator::Grid->new(
-        rows => $settings->{rows}, cols => $settings->{cols});
-    $algo->generate($grid);
+    my $grid = $generator->generate(%$settings);
     say $grid;
 }
 
@@ -37,19 +27,14 @@ sub _get_settings {
         'list-algorithms|l',
     ) or pod2usage();
 
-    pod2usage()              if $options{help};
+    pod2usage()              if $options{help} || @ARGV;
     _print_available_algos() if $options{'list-algorithms'};
 
     my $algo_name = $options{algorithm} // 'binary_tree';
-    my $algo_module = $name_to_algorithm{$algo_name} // do {
-        local $" = ',';
-        die "Invalid algorithm name $algo_name, must be one of @{[keys %name_to_algorithm]}.";
-    };
-
     my $size_str = $options{size} // "3x3";
     my ($rows, $cols) = _parse_size_str($size_str);
     return {
-        algorithm => $algo_module,
+        algorithm => $algo_name,
         rows      => $rows,
         cols      => $cols,
     };
@@ -65,9 +50,8 @@ sub _parse_size_str {
 
 sub _print_available_algos {
     say "These are the available algorithms:";
-    for my $name (sort keys %name_to_algorithm) {
-        my $mod = $name_to_algorithm{$name};
-        say "$name\n\t" . $mod->description;
+    for my $module (@{$generator->algorithms}) {
+        printf "%s\n\t%s\n", $module->name, $module->description;
     }
     exit 0;
 }
