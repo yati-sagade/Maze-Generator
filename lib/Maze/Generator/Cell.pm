@@ -104,11 +104,12 @@ sub link {
     my $self    = shift;
     my $other   = shift;
     my $options = shift // {};
+    my $bidi    = $options->{bidirectional} // 1;
     croak "Attempt to link to cell which is not a neighbor."
         if !$self->is_neighboring_to($other);
     $self->links->{$other->hash}->open(1);
     $other->link($self, { bidirectional => 0 })
-        if $options->{bidirectional};
+        if $bidi;
 }
 
 sub unlink {

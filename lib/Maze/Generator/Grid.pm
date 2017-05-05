@@ -63,9 +63,9 @@ has grid => (
 
 sub with_each_cell_do {
     my ($self, $code) = @_;
-    for my $row (0..$self->rows) {
-        for my $col (0..$self->cols) {
-            my $cell = $self->grid->[$row][$col];
+    for my $row (0..$self->rows-1) {
+        for my $col (0..$self->cols-1) {
+            my $cell = $self->cell_at($row, $col);
             $code->($cell);
         }
     }
@@ -76,6 +76,14 @@ sub cell_at {
     return $self->grid->[$row][$col];
 }
 
+sub last_row {
+    return shift->rows-1;
+}
+
+sub last_col {
+    return shift->cols-1;
+}
+
 sub to_string {
     my $self = shift;
     # Since most of the times fonts are longer than they are wider,
@@ -83,14 +91,20 @@ sub to_string {
     # to make up. This is not perfect though.
     my $num_horiz_reps = 2;
     my @ret;
-    # Top row.
+
+    # Top boundary.
     push @ret, TOPLEFT;
     for my $i (0..$self->cols-1) {
         push @ret, (HBAR) x $num_horiz_reps;
         if ($i == $self->cols-1) {
             push @ret, TOPRIGHT, "\n";
         } else {
-            push @ret, HDOWN;
+            my $cell_below = $self->cell_at(0, $i);
+            my $cell_below_linked_to_its_east =
+                                $cell_below
+                             && $cell_below->east
+                             && $cell_below->is_linked_to($cell_below->east);
+            push @ret, ($cell_below_linked_to_its_east ? HBAR : HDOWN);
         }
     }
     # Intermediate rows
@@ -117,6 +131,7 @@ sub to_string {
                 push @ret, (HBAR) x $num_horiz_reps;
             }
 
+            # For the bottom row, assume a value of false.
             my $south_linked_to_its_east =
                                 $cell->south
                              && $cell->south->east
@@ -138,9 +153,9 @@ sub to_string {
             } elsif (!$east_linked && $south_linked_to_its_east) {
                 $conn_char = HUP;
             } elsif ($east_linked && !$south_linked_to_its_east) {
-                $conn_char = HDOWN;
+                $conn_char = $is_bottom_boundary_cell ? HBAR : HDOWN;
             } elsif ($east_linked && $south_linked_to_its_east) {
-                $conn_char = VBAR;
+                $conn_char = HBAR;
             }
             push @ret, $conn_char;
         }
