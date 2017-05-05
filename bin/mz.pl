@@ -70,15 +70,29 @@ mz.pl
 
 Generate a maze with the default algorithm:
 
-    perl mz.pl
+    $ perl mz.pl
+    ┌────────┐
+    ├──────  ┤
+    ├──────  ┤
+    └────────┘
 
 Generate a maze with a named algorithm:
 
-    perl mz.pl --algorithm=binary_tree
+    $ perl ./bin/mz.pl -a binary_tree
+    ┌────────┐
+    ├  ┬  ┬  ┤
+    ├──┴  ┼  ┤
+    └─────┴──┘
 
 Generate a maze with a named algorithm and given size:
 
-    perl mz.pl --algorithm=binary_tree --size=7x6
+    $ perl ./bin/mz.pl -a sidewinder -s 5x5
+    ┌──────────────┐
+    ├  ┬  ┬  ───┬──┤
+    ├  ┼  ┴──┬  ┼──┤
+    ├──┴─────┴  ┴──┤
+    ├  ┬───  ┬  ───┤
+    └──┴─────┴─────┘
 
 =head1 DESCRIPTION
 
