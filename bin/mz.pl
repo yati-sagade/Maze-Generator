@@ -3,6 +3,7 @@ use strictures 2;
 use feature qw(say);
 
 use Maze::Generator;
+use Maze::Generator::Drawing;
 use Getopt::Long;
 use Pod::Usage;
 use Data::Dumper;
@@ -14,8 +15,14 @@ $SIG{__DIE__} = \&Carp::confess;
 my $generator = Maze::Generator->new;
 MAIN: {
     my $settings = _get_settings();
+    my $output = delete $settings->{output} || 'terminal';
     my $grid = $generator->generate(%$settings);
-    say $grid;
+    if ($output eq 'terminal') {
+        say $grid;
+    } else {
+        my $draw = Maze::Generator::Drawing->new(output_filename => $output);
+        $draw->draw($grid);
+    }
 }
 
 sub _get_settings {
@@ -25,6 +32,7 @@ sub _get_settings {
         'size|s=s',
         'help|h',
         'list-algorithms|l',
+        'output|o=s',
     ) or pod2usage();
 
     pod2usage()              if $options{help} || @ARGV;
@@ -37,6 +45,7 @@ sub _get_settings {
         algorithm => $algo_name,
         rows      => $rows,
         cols      => $cols,
+        output    => $options{output} // 'terminal',
     };
 }
 
@@ -108,6 +117,25 @@ standard output.
 Use the algorithm named by C<NAME>. To list all available algorithms, do
 
     perl mz.pl --list-algorithms
+
+=item --size MxN, -s MxN
+
+Size of the grid in rows and columns, in that order.
+
+=item --help, -h
+
+Show this help and quit.
+
+=item --list-algorithms, -l
+
+Show available maze drawing algorithms.
+
+=item --output FILENAME, -o FILENAME
+
+Instead of displaying the maze on the terminal, write it as an image to a file.
+The type of the file is inferred from the extension.
+
+=back
 
 =cut
 

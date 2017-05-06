@@ -39,7 +39,7 @@ sub generate {
 
     if (%args) {
         local $" = ',';
-        die "Don't know what to do with these args: @{[keys %args]}.";
+        die "Don't know what to do with these args: <<@{[keys %args]}>>.";
     }
 
     my $algo_mod = $self->algorithm_name_to_module_map->{$algo} //
